@@ -6,6 +6,7 @@
     </head>
     <body>
         <header>
+<a href="{{ url_for('logout') }}" style="position: absolute; right: 20px; top: 20px; color: white; text-decoration: none;">Cerrar Sesión</a>
             <h5>Lumina</h5>
             <h4>Plataforma de Visión y Recomendación Bibliotecaria</h4>
         </header>
@@ -16,9 +17,11 @@
         <div id="saludos">
             <p>Bienvenido a Lumina</p>
         </div>
+        <!--
         <div id="abajo">
             <button id="stop">Detener visión</button>
         </div>
+        -->
         <div id="abajo"></div>
         <footer>
             <p>&copy; 2026 Tecnológico Nacional de México - Lumina</p>

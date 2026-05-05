@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request, url_for, session, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 
@@ -7,12 +7,15 @@ load_dotenv()
 
 app = Flask(__name__)
 
+app.secret_key = "clave_super_secreta_lumina"
+
 usuario = os.getenv('DB_USER')
 contraseña = os.getenv('DB_PASSWORD')
 host = os.getenv('DB_HOST')
 nombre_bd = os.getenv('DB_NAME')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{usuario}:{contraseña}@{host}/{nombre_bd}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 class Usuario(db.Model):
@@ -41,7 +44,36 @@ with app.app_context():
 @app.route('/')
 def home():
     #return "<h1>¡Hola desde Flask!</h1><p>Texto de prueba</p>"
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
     return render_template('index.html')
 # comentario de Earvin como prueba de commit
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if 'usuario' in session:
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        password = request.form['password']
+
+        usuario = Usuario.query.filter_by(nombre=nombre).first()
+        if usuario and usuario.password == password:
+            session['usuario'] = usuario.nombre
+            flash('Inicio de sesión exitoso', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Nombre de usuario o contraseña incorrectos', 'danger')
+
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('usuario', None)
+    flash('Has cerrado sesión', 'info')
+    return redirect(url_for('login'))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
