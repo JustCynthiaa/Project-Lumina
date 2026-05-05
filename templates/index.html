@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>Lumina</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='main_styles.css') }}">
+
+    </head>
+    <body>
+        <header>
+            <h5>Lumina</h5>
+            <h4>Plataforma de Visión y Recomendación Bibliotecaria</h4>
+        </header>
+        <div id="camara">
+            <button>Iniciar visión</button>
+            <video id="video" style="width:100%; height:100%; display:none;"></video>
+        </div>
+        <div id="saludos">
+            <p>Bienvenido a Lumina</p>
+        </div>
+        <div id="abajo">
+            <button id="stop">Detener visión</button>
+        </div>
+        <div id="abajo"></div>
+        <footer>
+            <p>&copy; 2026 Tecnológico Nacional de México - Lumina</p>
+        </footer>
+        <!-- Agrega el script para manejar la cámara 
+        <script>
+            document.getElementById('camara').querySelector('button').addEventListener('click', function() {
+                var button = this;
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(stream) {
+                        var video = document.getElementById('video');
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        video.play();
+                        button.style.display = 'none';
+                    })
+                    .catch(function(err) {
+                        console.log('Error: ' + err);
+                    });
+            });
+
+            document.getElementById('stop').addEventListener('click', function() {
+                var video = document.getElementById('video');
+                var stream = video.srcObject;
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                video.style.display = 'none';
+                document.getElementById('camara').querySelector('button').style.display = 'block';
+            });
+        </script>
+        -->
+    </body>
+</html>

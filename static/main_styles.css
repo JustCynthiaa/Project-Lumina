@@ -1,0 +1,87 @@
+/* Estilos para la interfaz de Lumina con colores del Tecnm */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #FFFFFF; /* Blanco */
+    color: #003366; /* Azul Tecnm */
+    position: relative;
+}
+
+header {
+    background-color: #003366; /* Azul Tecnm */
+    color: #FFFFFF; /* Blanco */
+    padding: 20px;
+    text-align: center;
+}
+
+header h5 {
+    margin: 0;
+    font-size: 2em;
+}
+
+header h4 {
+    margin: 5px 0 0 0;
+    font-size: 1.2em;
+    font-weight: normal;
+}
+
+footer {
+    background-color: #003366;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+#saludos {
+    position: fixed;
+    right: 0;
+    top: 96px; /* Approximate header height */
+    width: 50%;
+    height: calc(100vh - 96px - 30px); /* Exclude header and footer */
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #003366;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+#abajo button:hover {
+    background-color: #336699;
+}
+#camara {
+    position: fixed;
+    left: 2%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40%;
+    aspect-ratio: 16/9;
+    background-color: #E0E0E0; 
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+#camara button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: #003366; 
+    color: #FFFFFF; 
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#camara button:hover {
+    background-color: #336699;
+}
