@@ -1,58 +1,130 @@
-<html>
-    <head>
-        <title>Lumina</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='main_styles.css') }}">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina | Control de Acceso</title>
+    
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link rel="stylesheet" href="../static/style.css?v=lumina_final">
+</head>
+<body>
 
-    </head>
-    <body>
-        <header>
-<a href="{{ url_for('logout') }}" style="position: absolute; right: 20px; top: 20px; color: white; text-decoration: none;">Cerrar Sesión</a>
-            <h5>Lumina</h5>
-            <h4>Plataforma de Visión y Recomendación Bibliotecaria</h4>
-        </header>
-        <div id="camara">
-            <button>Iniciar visión</button>
-            <video id="video" style="width:100%; height:100%; display:none;"></video>
-        </div>
-        <div id="saludos">
-            <p>Bienvenido a Lumina</p>
-        </div>
-        <!--
-        <div id="abajo">
-            <button id="stop">Detener visión</button>
-        </div>
-        -->
-        <div id="abajo"></div>
-        <footer>
-            <p>&copy; 2026 Tecnológico Nacional de México - Lumina</p>
-        </footer>
-        <!-- Agrega el script para manejar la cámara 
-        <script>
-            document.getElementById('camara').querySelector('button').addEventListener('click', function() {
-                var button = this;
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function(stream) {
-                        var video = document.getElementById('video');
-                        video.srcObject = stream;
-                        video.style.display = 'block';
-                        video.play();
-                        button.style.display = 'none';
-                    })
-                    .catch(function(err) {
-                        console.log('Error: ' + err);
-                    });
-            });
+    <div class="app-wrapper">
+        <!-- Menú Lateral -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="/static/images/logoTec.png" alt="Logo TecNM" class="main-logo">
+                <h2 class="brand-name">LUMINA</h2>
+            </div>
+            
+            <div class="student-info-panel">
+                <div class="info-item">
+                    <h4><i class="ph ph-info"></i> Aviso del día</h4>
+                    <p>Mediateca cerrada por hoy.</p>
+                </div>
+                <div class="info-item">
+                    <h4><i class="ph ph-books"></i> Nuevos títulos</h4>
+                    <p>¡Llegaron 15 nuevos libros de Python!</p>
+                </div>
+            </div>
+        </nav>
 
-            document.getElementById('stop').addEventListener('click', function() {
-                var video = document.getElementById('video');
-                var stream = video.srcObject;
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
+        
+        <div class="main-content">
+            
+            <header class="top-bar">
+                <div class="system-title">
+                    <span>Sistema de Acceso Biblioteca</span>
+                </div>
+                
+                <div class="admin-dropdown-container">
+                    <button class="user-btn" onclick="toggleDropdown()">
+                        <i class="ph ph-user-circle"></i>
+                        <span>ESTUDIANTE</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    
+                    <div class="dropdown-menu" id="adminDropdown">
+                        <a href="#"><i class="ph ph-shield-check"></i> Cambiar a Administrador</a>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content-body">
+                <div class="dashboard-grid">
+
+                    <!-- Visor de Huella -->
+                    <div class="card glass fingerprint-card">
+                        <div class="card-header">
+                            <i class="ph ph-fingerprint"></i>
+                            <h3>Escaneo Biométrico</h3>
+                        </div>
+                        <div class="fingerprint-display">
+                            <div class="scanner-line"></div>
+                            <i class="ph ph-fingerprint-simple"></i>
+                            <p>Coloque su huella en el lector</p>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Datos -->
+                    <div class="card glass form-card">
+                        <div class="card-header">
+                            <i class="ph ph-identification-card"></i>
+                            <h3>Datos del Estudiante</h3>
+                        </div>
+                        <form id="access-form">
+                            <div class="input-box">
+                                <label>Nombre Completo</label>
+                                <input type="text" value="" readonly>
+                            </div>
+                            <div class="input-row">
+                                <div class="input-box">
+                                    <label>N. de Control</label>
+                                    <input type="text" value="" readonly>
+                                </div>
+                                <div class="input-box">
+                                    <label>Carrera</label>
+                                    <input type="text" value="" readonly>
+                                </div>
+                            </div>
+
+                            <div class="actions">
+                                <button type="button" class="btn btn-primary"><i class="ph ph-sign-in"></i> Ingresar</button>
+                                <button type="button" class="btn btn-secondary"><i class="ph ph-user-plus"></i> Registro Nuevo</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+
+            
+            <footer class="footer">
+                <p>&copy; 2026 Instituto Tecnológico de Iguala</p>
+                <div class="footer-links">
+                    <span>Lumina v1.1.0</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    
+    <script>
+        function toggleDropdown() {
+            document.getElementById("adminDropdown").classList.toggle("show");
+        }
+        
+        
+        window.onclick = function(event) {
+            if (!event.target.closest('.admin-dropdown-container')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].classList.remove('show');
                 }
-                video.style.display = 'none';
-                document.getElementById('camara').querySelector('button').style.display = 'block';
-            });
-        </script>
-        -->
-    </body>
+            }
+        }
+    </script>
+</body>
 </html>
