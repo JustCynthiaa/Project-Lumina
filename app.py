@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 # Cargar variables de entorno (DB_USER, DB_PASSWORD, etc.)
 load_dotenv()
+# hola
 
 app = Flask(__name__)
 # Clave para cifrar las sesiones
