@@ -5,59 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lumina | Control de Acceso</title>
     
-    
+    <link rel="icon" type="image/png" href="/static/images/logoTec.png">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <link rel="stylesheet" href="../static/style.css?v=lumina_final">
+    <link rel="stylesheet" href="../static/style.css?v=lumina_dark">
+    <link rel="stylesheet" href="../static/welcome.css?v=lumina_dark">
 </head>
 <body>
 
     <div class="app-wrapper">
-        <!-- Menú Lateral -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <img src="/static/images/logoTec.png" alt="Logo TecNM" class="main-logo">
                 <h2 class="brand-name">LUMINA</h2>
+                <p class="brand-sub">Sistema Bibliotecario</p>
+            </div>
+
+            <div class="board-label">
+                <i class="ph ph-broadcast"></i>
+                Tablero de avisos
             </div>
             
             <div class="student-info-panel">
-                <div class="info-item">
-                    <h4><i class="ph ph-info"></i> Aviso del día</h4>
-                    <p>Mediateca cerrada por hoy.</p>
+                <div class="info-item tipo-aviso">
+                    <div class="info-item-top">
+                        <h4><i class="ph ph-warning-circle"></i> Aviso del día</h4>
+                        <span class="badge-tag aviso">Aviso</span>
+                    </div>
+                    <p>Mediateca cerrada por mantenimiento el día de hoy.</p>
                 </div>
-                <div class="info-item">
-                    <h4><i class="ph ph-books"></i> Nuevos títulos</h4>
-                    <p>¡Llegaron 15 nuevos libros de Python!</p>
+
+                <div class="info-item tipo-nuevo">
+                    <div class="info-item-top">
+                        <h4><i class="ph ph-books"></i> Nuevos títulos</h4>
+                        <span class="badge-tag nuevo">Nuevo</span>
+                    </div>
+                    <p>¡Llegaron 15 nuevos libros de Python y Machine Learning!</p>
                 </div>
+
+                <div class="info-item tipo-evento">
+                    <div class="info-item-top">
+                        <h4><i class="ph ph-calendar-star"></i> Próximo evento</h4>
+                        <span class="badge-tag evento">Evento</span>
+                    </div>
+                    <p>Feria del libro — Miércoles 14 de mayo, 10:00 a.m. en sala principal.</p>
+                </div>
+
+                <div class="info-item tipo-info">
+                    <div class="info-item-top">
+                        <h4><i class="ph ph-clock"></i> Horario de biblioteca</h4>
+                        <span class="badge-tag">Info</span>
+                    </div>
+                    <p>Lun–Vie: 8:00–20:00 &nbsp;|&nbsp; Sáb: 9:00–14:00</p>
+                </div>
+            </div>
+
+            <div class="sidebar-footer-panel">
+                <div class="sys-status">
+                    <div class="status-dot"></div>
+                    <span>Sistema activo</span>
+                </div>
+                <span class="sys-time" id="sidebarClock">--:--</span>
             </div>
         </nav>
 
-        
         <div class="main-content">
-            
             <header class="top-bar">
                 <div class="system-title">
                     <span>Sistema de Acceso Biblioteca</span>
                 </div>
                 
-                <div class="admin-dropdown-container">
-                    <button class="user-btn" onclick="toggleDropdown()">
-                        <i class="ph ph-user-circle"></i>
-                        <span>ESTUDIANTE</span>
-                        <i class="ph ph-caret-down"></i>
+                <div class="top-bar-right">
+                    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Cambiar tema">
+                        <span class="toggle-thumb">
+                            <span class="icon-sun">&#9728;</span>
+                            <span class="icon-moon">&#9790;</span>
+                        </span>
                     </button>
-                    
-                    <div class="dropdown-menu" id="adminDropdown">
-                        <a href="#"><i class="ph ph-shield-check"></i> Cambiar a Administrador</a>
-                    </div>
-                </div>
+
+                 <div class="admin-dropdown-container">
+    <button class="user-btn" onclick="toggleDropdown()">
+        <i class="ph ph-user-circle"></i>
+        <span>ESTUDIANTE</span>
+        <i class="ph ph-caret-down"></i>
+    </button>
+ <div class="dropdown-menu" id="adminDropdown">
+    <a href="{{ url_for('logout') }}">
+        <i class="ph ph-shield-check"></i> Cambiar a Administrador
+    </a>
+</div>
+</div>
             </header>
 
             <main class="content-body">
                 <div class="dashboard-grid">
 
-                    <!-- Visor de Huella -->
-                    <div class="card glass fingerprint-card">
+                    <div class="card fingerprint-card">
                         <div class="card-header">
                             <i class="ph ph-fingerprint"></i>
                             <h3>Escaneo Biométrico</h3>
@@ -69,38 +112,52 @@
                         </div>
                     </div>
 
-                    <!-- Formulario de Datos -->
-                    <div class="card glass form-card">
+                    <div class="card form-card">
                         <div class="card-header">
                             <i class="ph ph-identification-card"></i>
                             <h3>Datos del Estudiante</h3>
                         </div>
-                        <form id="access-form">
+
+                        <div class="notif-bar error" id="notifError">
+                            <i class="ph ph-user-circle-dashed notif-icon"></i>
+                            <div class="notif-text">
+                                <strong>Estudiante no encontrado</strong>
+                                <span>¿Es tu primera vez? Regístrate para acceder a la biblioteca.</span>
+                            </div>
+                            <a href="{{ url_for('registrar_alumno') }}" class="notif-register-btn">
+                                <i class="ph ph-user-plus"></i> Registrarme
+                            </a>
+                        </div>
+
+                        <form id="access-form" onsubmit="return false;">
                             <div class="input-box">
                                 <label>Nombre Completo</label>
-                                <input type="text" value="" readonly>
+                                <input type="text" id="inputNombre" placeholder="">
                             </div>
                             <div class="input-row">
                                 <div class="input-box">
                                     <label>N. de Control</label>
-                                    <input type="text" value="" readonly>
+                                    <input type="text" id="inputControl" placeholder="">
                                 </div>
                                 <div class="input-box">
                                     <label>Carrera</label>
-                                    <input type="text" value="" readonly>
+                                    <input type="text" id="inputCarrera" placeholder="">
                                 </div>
                             </div>
 
                             <div class="actions">
-                                <button type="button" class="btn btn-primary"><i class="ph ph-sign-in"></i> Ingresar</button>
-                                <button type="button" class="btn btn-secondary"><i class="ph ph-user-plus"></i> Registro Nuevo</button>
+                                <button type="button" class="btn btn-primary" onclick="intentarIngreso()">
+                                    <i class="ph ph-sign-in"></i> Ingresar
+                                </button>
+                                <a href="{{ url_for('registrar_alumno') }}" class="btn btn-secondary">
+                                    <i class="ph ph-user-plus"></i> Registro Nuevo
+                                </a>
                             </div>
                         </form>
                     </div>
                 </div>
             </main>
 
-            
             <footer class="footer">
                 <p>&copy; 2026 Instituto Tecnológico de Iguala</p>
                 <div class="footer-links">
@@ -110,21 +167,70 @@
         </div>
     </div>
 
+
+    <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-card" id="welcomeCard">
+
+            <div class="wc-header">
+                <div class="wc-rings"></div>
+                <div class="wc-particles" id="wcParticles"></div>
+                <div class="wc-check">
+                    <i class="ph ph-check-circle"></i>
+                </div>
+                <h2>¡Bienvenido/a!</h2>
+                <div class="wc-gold-line"></div>
+                <p>Acceso autorizado — Biblioteca ITI</p>
+            </div>
+
+            <div class="wc-student">
+                <div class="wc-avatar" id="wcAvatar">?</div>
+                <div class="wc-student-info">
+                    <div class="wc-name" id="wcNombre">—</div>
+                    <div class="wc-meta" id="wcMeta">—</div>
+                </div>
+            </div>
+
+            <div class="wc-divider"></div>
+
+            <div class="wc-book-section">
+                <div class="wc-book-label">
+                    <i class="ph ph-sparkle"></i>
+                    Recomendación para ti hoy
+                </div>
+                <div class="wc-book-card">
+                    <div class="wc-book-cover" id="wcBookCover"></div>
+                    <div class="wc-book-info">
+                        <div class="wc-book-title" id="wcBookTitle">—</div>
+                        <div class="wc-book-author" id="wcBookAuthor">—</div>
+                        <span class="wc-book-badge" id="wcBookBadge">
+                            <i class="ph ph-tag"></i> —
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="wc-close-btn" onclick="cerrarBienvenida()">
+                <i class="ph ph-door-open"></i> Entrar a la Biblioteca
+            </button>
+
+            <div class="wc-timer-bar">
+                <div class="wc-timer-fill" id="wcTimerFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/ingreso.js"></script>
+
+    <style>
     
-    <script>
-        function toggleDropdown() {
-            document.getElementById("adminDropdown").classList.toggle("show");
-        }
-        
-        
-        window.onclick = function(event) {
-            if (!event.target.closest('.admin-dropdown-container')) {
-                var dropdowns = document.getElementsByClassName("dropdown-menu");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    dropdowns[i].classList.remove('show');
-                }
-            }
-        }
-    </script>
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20%      { transform: translateX(-6px); }
+        40%      { transform: translateX(6px); }
+        60%      { transform: translateX(-4px); }
+        80%      { transform: translateX(4px); }
+    }
+    </style>
+
 </body>
 </html>

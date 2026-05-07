@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Lumina</title>
+    
+    <link rel="icon" type="image/png" href="/static/images/logoTec.png">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/registro.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+    
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/images/logoTec.png" alt="Logo TecNM" class="main-logo">
+            <h2 class="brand-name">LUMINA</h2>
+            <p class="brand-sub">Sistema Bibliotecario</p>
+        </div>
+
+        <div class="board-label">
+            <i class="ph ph-broadcast"></i>
+            Tablero de avisos
+        </div>
+        
+        <div class="student-info-panel">
+            <div class="info-item tipo-aviso">
+                <div class="info-item-top">
+                    <h4><i class="ph ph-warning-circle"></i> Aviso del día</h4>
+                    <span class="badge-tag aviso">Aviso</span>
+                </div>
+                <p>Mediateca cerrada por mantenimiento el día de hoy.</p>
+            </div>
+
+            <div class="info-item tipo-nuevo">
+                <div class="info-item-top">
+                    <h4><i class="ph ph-books"></i> Nuevos títulos</h4>
+                    <span class="badge-tag nuevo">Nuevo</span>
+                </div>
+                <p>¡Llegaron 15 nuevos libros de Python y Machine Learning!</p>
+            </div>
+
+            <div class="info-item tipo-evento">
+                <div class="info-item-top">
+                    <h4><i class="ph ph-calendar-star"></i> Próximo evento</h4>
+                    <span class="badge-tag evento">Evento</span>
+                </div>
+                <p>Feria del libro — Miércoles 14 de mayo, 10:00 a.m. en sala principal.</p>
+            </div>
+
+            <div class="info-item tipo-info">
+                <div class="info-item-top">
+                    <h4><i class="ph ph-clock"></i> Horario de biblioteca</h4>
+                    <span class="badge-tag">Info</span>
+                </div>
+                <p>Lun–Vie: 8:00–20:00 &nbsp;|&nbsp; Sáb: 9:00–14:00</p>
+            </div>
+        </div>
+
+        <div class="sidebar-footer-panel">
+            <div class="sys-status">
+                <div class="status-dot"></div>
+                <span>Sistema activo</span>
+            </div>
+            <span class="sys-time" id="sidebarClock">--:--</span>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        
+        <header class="top-bar">
+            <div class="system-title">
+                <span>Sistema de Acceso Biblioteca</span>
+            </div>
+            
+            <div class="top-bar-right">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Cambiar tema">
+                    <span class="toggle-thumb">
+                        <span class="icon-sun">&#9728;</span>
+                        <span class="icon-moon">&#9790;</span>
+                    </span>
+                </button>
+
+                <div class="admin-dropdown-container">
+                    <button class="user-btn">
+                        <i class="ph ph-user-circle"></i>
+                        <span>ESTUDIANTE</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            <div class="dashboard-grid" style="grid-template-columns: 1fr; max-width: 900px;">
+                
+                <div class="card form-card">
+                    <div class="card-header">
+                        <i class="ph ph-user-plus"></i>
+                        <h3>Registro de Nuevo Estudiante</h3>
+                    </div>
+                    
+                    <form action="/registrar" method="POST" class="registro-form">
+                        <div class="form-grid">
+                            <div class="input-group full-width">
+                                <label>NOMBRE(S)</label>
+                                <input type="text" name="nombre" value="{{ datos.nombre if datos else '' }}" placeholder="" required>
+                            </div>
+                            <div class="input-group full-width">
+                                <label>APELLIDOS</label>
+                                <input type="text" name="apellidos" value="{{ datos.apellidos if datos else '' }}" placeholder="" required>
+                            </div>
+                            <div class="input-group">
+                                <label>N. DE CONTROL</label>
+                                <input type="text" name="no_control" value="{{ datos.no_control if datos else '' }}" placeholder="" required>
+                            </div>
+                            <div class="input-group">
+                                <label>CARRERA</label>
+                                <select name="carrera" required>
+                                    <option value="" disabled {{ 'selected' if not datos }}>Seleccione su carrera...</option>
+                                    <option value="ISC" {{ 'selected' if datos and datos.carrera == 'ISC' }}>Ing. Sistemas Computacionales</option>
+                                    <option value="IIA" {{ 'selected' if datos and datos.carrera == 'IGE' }}>Ing. Gestion Empresarial</option>
+                                    <option value="ISE" {{ 'selected' if datos and datos.carrera == 'IIF' }}>Ing. Informatica</option>
+                                    <option value="IGA" {{ 'selected' if datos and datos.carrera == 'ICP' }}>Ing. Contador Público</option>
+                                    <option value="IGA" {{ 'selected' if datos and datos.carrera == 'ICP' }}>Ing. Industrial</option>
+
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>SEMESTRE</label>
+                                <input type="number" name="semestre" value="{{ datos.semestre if datos else '' }}" placeholder="Ej: 8" required>
+                            </div>
+                            <div class="input-group">
+                                <label>CORREO INSTITUCIONAL</label>
+                                <div class="email-wrapper">
+                                    <input type="text" id="email_prefix" name="email_prefix" placeholder="No. Control" value="{{ datos.email_prefix if datos else '' }}" required>
+                                    <span class="domain-addon">@iguala.tecnm.mx</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="actions" style="margin-top: 30px; justify-content: flex-end;">
+                            <a href="/" class="btn btn-secondary" style="flex: 0 1 auto; padding: 14px 24px;">Cancelar</a>
+                            <button type="submit" class="btn btn-primary" style="flex: 0 1 auto; padding: 14px 32px;">
+                                <i class="ph ph-floppy-disk"></i> Guardar Registro
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2026 Instituto Tecnológico de Iguala</p>
+            <div class="footer-links">
+                <span>Lumina v1.1.0</span>
+            </div>
+        </footer>
+
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div id="notificacionModal" class="modal-overlay active">
+          <div class="modal-card {{ category }}">
+              <div class="modal-icon">
+                  <i class="ph {{ 'ph-check-circle' if category == 'success' else 'ph-warning-circle' }}"></i>
+              </div>
+              <h3 class="modal-title">{{ '¡Éxito!' if category == 'success' else 'Atención' }}</h3>
+              <p class="modal-message">{{ message }}</p>
+              <button onclick="cerrarModal('{{ category }}')" class="btn-modal">Aceptar</button>
+          </div>
+      </div>
+    {% endfor %}
+  {% endif %} 
+{% endwith %}
+
+<script>
+    function cerrarModal(categoria) {
+        document.getElementById('notificacionModal').classList.remove('active');
+        if (categoria === 'success') {
+            window.location.href = "/";
+        }
+    }
+
+    function updateClock() {
+        const now = new Date();
+        const clock = document.getElementById('sidebarClock');
+        if(clock) clock.textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+
+    const THEME_KEY = 'lumina_theme';
+    function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem(THEME_KEY, t);
+    }
+    function toggleTheme() {
+        applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+    (function() {
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved) applyTheme(saved);
+        else if (window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
+    })();
+</script>
+</body>
+</html>

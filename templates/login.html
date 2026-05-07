@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - Lumina</title>
-    <!-- Importamos tus estilos base -->
+    <link rel="icon" type="image/png" href="/static/images/logoTec.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='main_styles.css') }}">
     <style>
         /* Estilos específicos para la caja de login centrada */
@@ -13,6 +13,7 @@
             align-items: center;
             height: 100vh;
             background-color: #f4f4f9;
+            margin: 0;
         }
         .login-box {
             background-color: white;
@@ -28,6 +29,7 @@
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 5px;
+            box-sizing: border-box; /* Previene que el input se salga de la caja */
         }
         .login-box button {
             width: 100%;
@@ -38,14 +40,20 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 1.1em;
+            margin-top: 10px;
+            transition: background-color 0.3s;
         }
         .login-box button:hover {
             background-color: #336699;
         }
         .error-msg {
-            color: red;
+            color: #d9534f;
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
             font-size: 0.9em;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            padding: 8px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -54,18 +62,16 @@
     <div class="login-box">
         <h2 style="color: #003366; margin-top: 0;">Ingreso a Lumina</h2>
         
-        <!-- Mensajes de error (Flash) -->
-        {% with messages = get_flashed_messages(category_filter=["error"]) %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for message in messages %}
+                {% for category, message in messages %}
                     <div class="error-msg">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <!-- El formulario que envía los datos por POST a la ruta /login -->
         <form action="{{ url_for('login') }}" method="POST">
-            <input type="text" name="nombre" placeholder="Usuario" required>
+            <input type="text" name="usuario" placeholder="Usuario" required autofocus>
             <input type="password" name="password" placeholder="Contraseña" required>
             <button type="submit">Entrar</button>
         </form>
