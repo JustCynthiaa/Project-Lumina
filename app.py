@@ -20,12 +20,13 @@ db = SQLAlchemy(app)
 # --- MODELOS ---
 class Alumno(db.Model):
     __tablename__ = 'alumnos'
-    no_control = db.Column(db.String(20), primary_key=True)
-    nombre     = db.Column(db.String(50), nullable=False)
-    apellidos  = db.Column(db.String(100), nullable=False)
-    carrera    = db.Column(db.String(50), nullable=False)
-    semestre   = db.Column(db.Integer, nullable=False)
-    email      = db.Column(db.String(100), nullable=False)
+    no_control       = db.Column(db.String(20), primary_key=True)
+    nombre           = db.Column(db.String(50), nullable=False)
+    apellido_paterno = db.Column(db.String(50), nullable=False, default='Por Definir')
+    apellido_materno = db.Column(db.String(50), nullable=False, default='Por Definir')
+    carrera          = db.Column(db.String(100), nullable=False, default='Por Definir')
+    semestre         = db.Column(db.String(20), nullable=False, default='Por Definir') 
+    email            = db.Column(db.String(100), nullable=False, default='Por Definir')
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios' 
