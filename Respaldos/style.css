@@ -539,3 +539,6 @@ input:focus { border-color: var(--azul-deep); outline: none; background: var(--b
 }
 .footer-links { display: flex; gap: 20px; }
 .footer-links a { color: var(--azul-deep); text-decoration: none; }
+
+
+

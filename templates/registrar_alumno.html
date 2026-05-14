@@ -103,7 +103,7 @@
                         <h3>Registro de Nuevo Estudiante</h3>
                     </div>
                     
-                    <form action="/registrar" method="POST" class="registro-form">
+                    <form action="/registrar" method="POST" class="registro-form" id="registroForm">
                         <div class="form-grid">
                             <div class="input-group full-width">
                                 <label>NOMBRE(S)</label>
@@ -115,7 +115,7 @@
                             </div>
                             <div class="input-group">
                                 <label>N. DE CONTROL</label>
-                                <input type="text" name="no_control" value="{{ datos.no_control if datos else '' }}" placeholder="" required>
+                                <input type="text" name="no_control" id="input_no_control" value="{{ datos.no_control if datos else '' }}" placeholder="" required>
                             </div>
                             <div class="input-group">
                                 <label>CARRERA</label>
@@ -144,8 +144,13 @@
 
                         <div class="actions" style="margin-top: 30px; justify-content: flex-end;">
                             <a href="/" class="btn btn-secondary" style="flex: 0 1 auto; padding: 14px 24px;">Cancelar</a>
-                            <button type="submit" class="btn btn-primary" style="flex: 0 1 auto; padding: 14px 32px;">
-                                <i class="ph ph-floppy-disk"></i> Guardar Registro
+                            
+                            <button type="submit" class="btn btn-primary" id="btnGuardar" style="flex: 0 1 auto; padding: 14px 32px;">
+                                <i class="ph ph-floppy-disk"></i> 1. Guardar Registro
+                            </button>
+
+                            <button type="button" class="btn btn-primary" id="btnHuella" style="display:none; background: #C9A84C; border-color: #C9A84C; flex: 0 1 auto; padding: 14px 32px;">
+                                <i class="ph ph-fingerprint"></i> 2. Registrar Huella
                             </button>
                         </div>
                     </form>
@@ -182,6 +187,7 @@
 {% endwith %}
 
 <script>
+    // --- LÓGICA DE INTERFAZ ORIGINAL ---
     function cerrarModal(categoria) {
         document.getElementById('notificacionModal').classList.remove('active');
         if (categoria === 'success') {
@@ -210,6 +216,118 @@
         if (saved) applyTheme(saved);
         else if (window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme('dark');
     })();
+
+    // --- FUNCIONES ROBUSTAS DE DECODIFICACIÓN (LA SOLUCIÓN AL ERROR) ---
+    function base64urlToBuffer(base64url) {
+        // Añade el "padding" que a veces le falta a la llave y rompe el navegador
+        let padding = '='.repeat((4 - base64url.length % 4) % 4);
+        let base64 = (base64url + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        let rawData = window.atob(base64);
+        let outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
+    function bufferToBase64url(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let str = '';
+        for (let charCode of bytes) {
+            str += String.fromCharCode(charCode);
+        }
+        const base64String = btoa(str);
+        return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    // --- LÓGICA DE REGISTRO BIOMÉTRICO ---
+    const form = document.getElementById('registroForm');
+    const btnHuella = document.getElementById('btnHuella');
+    const btnGuardar = document.getElementById('btnGuardar');
+    let noControlRegistrado = "";
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        noControlRegistrado = formData.get('no_control');
+
+        try {
+            const resp = await fetch('/registrar', { method: 'POST', body: formData });
+            
+            if (resp.ok) {
+                btnGuardar.style.display = 'none';
+                btnHuella.style.display = 'inline-flex';
+                
+                const inputs = form.querySelectorAll('input, select');
+                inputs.forEach(input => input.readOnly = true);
+                
+                alert("Paso 1 completado: Datos guardados.\n\nPor favor, da clic en 'Registrar Huella' y coloca el dedo en el lector Boland.");
+            } else {
+                alert("El número de control ya existe o hubo un error.");
+            }
+        } catch (err) {
+            alert("Error de conexión al servidor.");
+        }
+    };
+
+    btnHuella.onclick = async () => {
+        try {
+            // A) Pedimos a Flask el "desafío"
+            const optionsResp = await fetch('/registration-options', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ no_control: noControlRegistrado })
+            });
+            
+            // IMPORTANTE: Parseamos correctamente la respuesta por si Flask la manda como string doble
+            let responseData = await optionsResp.json();
+            if (typeof responseData === 'string') {
+                responseData = JSON.parse(responseData); 
+            }
+
+            if (responseData.error) {
+                alert(responseData.error);
+                return;
+            }
+
+            // Transformamos usando nuestra nueva función a prueba de fallos
+            const options = responseData;
+            options.challenge = base64urlToBuffer(options.challenge);
+            options.user.id = base64urlToBuffer(options.user.id);
+            
+            // B) Ejecutamos el escáner de Windows Hello
+            const credential = await navigator.credentials.create({ publicKey: options });
+            
+            // C) Enviamos la respuesta de vuelta a Python
+            const verifyResp = await fetch('/verify-registration', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    no_control: noControlRegistrado,
+                    credential: {
+                        id: credential.id,
+                        rawId: bufferToBase64url(credential.rawId),
+                        response: {
+                            attestationObject: bufferToBase64url(credential.response.attestationObject),
+                            clientDataJSON: bufferToBase64url(credential.response.clientDataJSON)
+                        },
+                        type: credential.type
+                    }
+                })
+            });
+
+            const result = await verifyResp.json();
+            if (result.status === 'success') {
+                alert("¡Huella registrada exitosamente para el alumno!");
+                window.location.href = "/";
+            } else {
+                alert("Error al verificar la huella en el servidor: " + result.message);
+            }
+        } catch (err) {
+            console.error("El error detallado es:", err);
+            alert("Operación cancelada o no se detectó el lector. Presiona F12 y mira la consola para enviarme el error en letras rojas.");
+        }
+    };
 </script>
 </body>
 </html>
