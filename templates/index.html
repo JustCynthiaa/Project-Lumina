@@ -6,8 +6,9 @@
     <title>LUMINA | Sistema Bibliotecario ITI</title>
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
+    <link rel="icon" type="image/png" href="/static/images/logoTec.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -27,6 +28,16 @@
             }
         }
     </script>
+    <style>
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+    </style>
 </head>
 <body class="bg-bodybg text-gray-800 min-h-screen flex flex-col font-sans">
 
@@ -67,12 +78,12 @@
                             <p class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Cambiar Rol</p>
                         </div>
                         
-             <a href="{{ url_for('login') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-tecblue hover:bg-blue-50 transition-all group">
-    <div class="bg-gray-100 group-hover:bg-blue-100 p-1.5 rounded-md transition-colors">
-        <i class="ph ph-shield-check text-lg text-gray-500 group-hover:text-tecblue"></i>
-    </div>
-    ADMINISTRADOR
-</a>
+                        <a href="{{ url_for('login') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:text-tecblue hover:bg-blue-50 transition-all group">
+                            <div class="bg-gray-100 group-hover:bg-blue-100 p-1.5 rounded-md transition-colors">
+                                <i class="ph ph-shield-check text-lg text-gray-500 group-hover:text-tecblue"></i>
+                            </div>
+                            ADMINISTRADOR
+                        </a>
                     </div>
                 </div>
             </div>
@@ -88,18 +99,38 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-panelbg p-6 rounded-lg shadow-sm border border-gray-200 h-full">
+                
                 <div class="flex flex-col h-full">
                     <label class="text-xs font-bold text-gray-500 uppercase mb-3">Captura Facial</label>
-                    <div class="flex-1 bg-gray-50 border-2 border-dashed border-gray-300 rounded flex flex-col items-center justify-center p-8 min-h-[280px] relative overflow-hidden group">
-                        <div class="relative flex items-center justify-center">
-                            <i class="ph ph-corners text-8xl text-gray-300 group-hover:text-tecblue transition-colors"></i>
-                            <i class="ph ph-user text-4xl text-gray-300 absolute group-hover:text-tecblue transition-colors"></i>
+                    
+                    <div id="camera-container" class="flex-1 bg-gray-900 border-2 border-gray-800 rounded flex flex-col items-center justify-center min-h-[280px] relative overflow-hidden group shadow-inner">
+                        
+                        <video id="video-feed" autoplay playsinline class="w-full h-full object-cover hidden transform scale-x-[-1]"></video>
+                        <canvas id="overlay" class="absolute inset-0 w-full h-full object-cover hidden z-10 transform scale-x-[-1]"></canvas>
+
+                        <div id="camera-placeholder" class="flex flex-col items-center justify-center absolute inset-0 bg-gray-50 border-2 border-dashed border-gray-300 rounded z-20">
+                            <div class="relative flex items-center justify-center">
+                                <i class="ph ph-corners text-8xl text-gray-300 group-hover:text-tecblue transition-colors"></i>
+                                <i class="ph ph-user text-4xl text-gray-300 absolute group-hover:text-tecblue transition-colors"></i>
+                            </div>
+                            <p class="text-sm font-medium text-gray-500 mt-4 text-center">Cámara apagada</p>
                         </div>
-                        <p class="text-sm font-medium text-gray-500 mt-4 text-center">Cámara en espera</p>
+
+                        <canvas id="canvas-foto" class="hidden"></canvas>
+
+                        <div id="progress-container" class="absolute bottom-0 left-0 w-full h-3 bg-gray-800/50 hidden z-30">
+                            <div id="progress-bar" class="h-full bg-tecaccent transition-all duration-100 ease-linear shadow-[0_0_10px_rgba(96,165,250,0.8)]" style="width: 0%"></div>
+                        </div>
+                        <div id="instruccion-camara" class="absolute top-4 bg-black/60 text-white text-xs font-bold px-4 py-2 rounded-full hidden z-30 tracking-wide backdrop-blur-sm">
+                            Posiciona tu rostro y no te muevas
+                        </div>
                     </div>
-                    <button class="mt-4 w-full bg-tecblue hover:bg-[#152b52] text-white font-medium py-3 rounded transition-colors flex items-center justify-center text-sm shadow-sm">
-                        Capturar cámara
-                    </button>
+
+                    <div class="flex gap-2 mt-4">
+                        <button type="button" id="btn-encender" onclick="encenderCamara()" class="w-full bg-tecblue hover:bg-[#152b52] text-white font-medium py-3 rounded transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                            <i class="ph ph-video-camera text-lg"></i> Encender Cámara
+                        </button>
+                    </div>
                 </div>
 
                 <div class="flex flex-col h-full">
@@ -107,18 +138,19 @@
                     <form class="flex-1 flex flex-col gap-4">
                         <div class="flex flex-col">
                             <label class="text-xs font-semibold text-gray-600 mb-1">N. de Control</label>
-                            <input type="text" readonly placeholder="--" class="bg-gray-100 border border-gray-300 text-gray-800 text-sm rounded px-3 py-2.5 outline-none">
+                            <input type="text" id="ficha-control" readonly placeholder="--" class="bg-gray-100 border border-gray-300 text-gray-800 text-sm rounded px-3 py-2.5 outline-none cursor-not-allowed font-bold text-tecblue">
                         </div>
                         <div class="flex flex-col">
                             <label class="text-xs font-semibold text-gray-600 mb-1">Nombre Completo</label>
-                            <input type="text" readonly placeholder="--" class="bg-gray-100 border border-gray-300 text-gray-800 text-sm rounded px-3 py-2.5 outline-none">
+                            <input type="text" id="ficha-nombre" readonly placeholder="--" class="bg-gray-100 border border-gray-300 text-gray-800 text-sm rounded px-3 py-2.5 outline-none cursor-not-allowed uppercase">
                         </div>
                         <div class="flex flex-col">
                             <label class="text-xs font-semibold text-gray-600 mb-1">Carrera</label>
-                            <input type="text" readonly placeholder="--" class="bg-gray-100 border border-gray-300 text-gray-800 text-sm rounded px-3 py-2.5 outline-none">
+                            <input type="text" id="ficha-carrera" readonly placeholder="--" class="bg-gray-100 border border-gray-300 text-gray-800 text-sm rounded px-3 py-2.5 outline-none cursor-not-allowed">
                         </div>
+                        
                         <div class="mt-auto pt-4 border-t border-gray-100">
-                            <div class="flex items-center gap-2 text-gray-500 text-sm">
+                            <div id="estadoFicha" class="flex items-center gap-2 text-gray-500 text-sm p-2 rounded-lg transition-all duration-300">
                                 <i class="ph ph-info text-lg"></i>
                                 <span>Estado: <span class="font-semibold text-gray-600">Pendiente de validación</span></span>
                             </div>
@@ -157,7 +189,38 @@
         </div>
     </footer>
 
+    <div id="modal-bienvenida" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md w-full mx-4 transform scale-95 transition-transform duration-300" id="modal-content">
+            
+            <div class="bg-tecblue p-6 text-center relative">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-lg mb-4 border-4 border-tecaccent">
+                    <i class="ph ph-user-check text-4xl text-tecblue"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white uppercase tracking-wide" id="modal-nombre">Bienvenido</h2>
+                <p class="text-tecaccent font-medium mt-1">Acceso Autorizado</p>
+            </div>
+            
+            <div class="p-6 bg-gray-50 text-center">
+                <div class="flex items-center justify-center gap-2 text-gray-500 mb-3">
+                    <i class="ph ph-book-open text-xl"></i>
+                    <span class="text-xs font-bold uppercase tracking-wider">Recomendación del Día</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden group cursor-pointer hover:border-tecaccent transition-colors text-left">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-tecaccent"></div>
+                    <h3 class="text-md font-bold text-gray-800">Hábitos Atómicos</h3>
+                    <p class="text-sm text-gray-500 mt-1">James Clear</p>
+                    <p class="text-[10px] text-gray-400 mt-2 italic">"Un pequeño cambio hace una gran diferencia."</p>
+                </div>
+            </div>
+            
+            <div class="h-2 w-full bg-gray-200">
+                <div id="modal-progress" class="h-full bg-green-500 w-full"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- LÓGICA DE LA INTERFAZ ---
         function toggleDropdown() {
             const menu = document.getElementById('userDropdownMenu');
             menu.classList.toggle('hidden');
@@ -184,6 +247,315 @@
         }
         updateClock();
         setInterval(updateClock, 1000);
+
+        // --- LÓGICA DE LA CÁMARA E IA AUTOMÁTICA ---
+        let streamActivo = null;
+        let detectionInterval = null;
+        let isDetecting = false;
+        let quietoProgress = 0;
+        let lastCenter = null;
+        let modelosCargados = false; 
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const btn = document.getElementById('btn-encender');
+            const estadoFicha = document.getElementById('estadoFicha');
+            
+            if(btn) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> Descargando IA...';
+            }
+
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights');
+                console.log("Modelos de IA listos.");
+                modelosCargados = true;
+                
+                if(btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btn.innerHTML = '<i class="ph ph-video-camera text-lg"></i> Encender Cámara';
+                }
+                
+                if(estadoFicha) {
+                    estadoFicha.innerHTML = `<i class="ph ph-check-circle text-lg text-tecblue"></i><span>Estado: <span class="font-semibold text-gray-600"> Enciende la cámara.</span></span>`;
+                }
+            } catch (err) {
+                console.error("Error crítico al cargar la IA:", err);
+                if(btn) btn.innerHTML = '<i class="ph ph-warning text-lg"></i> Error de red';
+                if(estadoFicha) {
+                    estadoFicha.className = "flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-lg border border-red-100 transition-all duration-300";
+                    estadoFicha.innerHTML = `<i class="ph ph-warning-circle text-lg text-red-500"></i><span>Estado: <span class="font-bold text-red-500">Error descargando IA.</span></span>`;
+                }
+            }
+        });
+
+        async function encenderCamara() {
+            if (!modelosCargados) return;
+
+            const video = document.getElementById('video-feed');
+            const placeholder = document.getElementById('camera-placeholder');
+            const overlay = document.getElementById('overlay');
+            const btnEncender = document.getElementById('btn-encender');
+            const estadoFicha = document.getElementById('estadoFicha');
+
+            try {
+                streamActivo = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                video.srcObject = streamActivo;
+                
+                placeholder.classList.add('hidden');
+                video.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+
+                btnEncender.innerHTML = '<i class="ph ph-video-camera-slash text-lg"></i> Apagar Cámara';
+                btnEncender.setAttribute('onclick', 'apagarCamara()');
+                btnEncender.className = "w-full bg-red-100 hover:bg-red-200 text-red-700 font-medium py-3 rounded transition-colors flex items-center justify-center gap-2 text-sm shadow-sm border border-red-300";
+                
+                estadoFicha.className = "flex items-center gap-2 text-tecblue text-sm bg-blue-50 p-2 rounded-lg border border-blue-100 transition-all duration-300";
+                estadoFicha.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i><span>Estado: <span class="font-bold">Ajustando lente...</span></span>`;
+
+                video.onloadeddata = () => {
+                    setTimeout(() => { iniciarEscaneo(); }, 500);
+                };
+
+            } catch (error) {
+                console.error("Error cámara: ", error);
+                alert("No se pudo acceder a la cámara. Verifica los permisos de tu navegador.");
+            }
+        }
+
+        function apagarCamara() {
+            const video = document.getElementById('video-feed');
+            const overlay = document.getElementById('overlay');
+            const btnEncender = document.getElementById('btn-encender');
+            
+            isDetecting = false;
+            clearInterval(detectionInterval);
+            document.getElementById('progress-container').classList.add('hidden');
+            document.getElementById('instruccion-camara').classList.add('hidden');
+            
+            if (streamActivo) {
+                streamActivo.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+
+            document.getElementById('camera-placeholder').classList.remove('hidden');
+            video.classList.add('hidden');
+            overlay.classList.add('hidden');
+
+            btnEncender.innerHTML = '<i class="ph ph-video-camera text-lg"></i> Encender Cámara';
+            btnEncender.setAttribute('onclick', 'encenderCamara()');
+            btnEncender.className = "w-full bg-tecblue hover:bg-[#152b52] text-white font-medium py-3 rounded transition-colors flex items-center justify-center gap-2 text-sm shadow-sm";
+            
+            document.getElementById('estadoFicha').className = "flex items-center gap-2 text-gray-500 text-sm p-2 rounded-lg transition-all duration-300";
+            document.getElementById('estadoFicha').innerHTML = `<i class="ph ph-info text-lg"></i><span>Estado: <span class="font-semibold text-gray-600">Cámara apagada</span></span>`;
+        }
+
+        function iniciarEscaneo() {
+            isDetecting = true;
+            quietoProgress = 0;
+            lastCenter = null;
+            document.getElementById('progress-container').classList.remove('hidden');
+            document.getElementById('instruccion-camara').classList.remove('hidden');
+            document.getElementById('instruccion-camara').innerText = "Buscando rostro...";
+            document.getElementById('progress-bar').style.width = '0%';
+            
+            document.getElementById('estadoFicha').className = "flex items-center gap-2 text-tecblue text-sm bg-blue-50 p-2 rounded-lg border border-blue-100 transition-all duration-300";
+            document.getElementById('estadoFicha').innerHTML = `<i class="ph ph-scan animate-pulse text-lg text-tecaccent"></i><span>Estado: <span class="font-bold text-tecblue">Analizando rostro...</span></span>`;
+            
+            procesarVideoEnVivo();
+        }
+
+        async function procesarVideoEnVivo() {
+            const video = document.getElementById('video-feed');
+            const canvas = document.getElementById('overlay');
+            
+            if (video.videoWidth === 0 || video.videoHeight === 0) {
+                if (isDetecting) setTimeout(procesarVideoEnVivo, 500);
+                return;
+            }
+
+            const displaySize = { width: video.videoWidth, height: video.videoHeight };
+            faceapi.matchDimensions(canvas, displaySize);
+
+            const opcionesSensibles = new faceapi.TinyFaceDetectorOptions({ 
+                inputSize: 320, 
+                scoreThreshold: 0.2
+            });
+
+            detectionInterval = setInterval(async () => {
+                if (!isDetecting) return;
+
+                try {
+                    const detections = await faceapi.detectAllFaces(video, opcionesSensibles);
+                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    if (resizedDetections.length === 1) {
+                        const box = resizedDetections[0].box;
+                        
+                        const drawBox = new faceapi.draw.DrawBox(box, { 
+                            lineWidth: 3, 
+                            boxColor: quietoProgress > 50 ? '#10B981' : '#3B82F6' 
+                        });
+                        drawBox.draw(canvas);
+
+                        const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+                        if (lastCenter) {
+                            const diffX = Math.abs(center.x - lastCenter.x);
+                            const diffY = Math.abs(center.y - lastCenter.y);
+                            
+                            if (diffX < 15 && diffY < 15) {
+                                quietoProgress += 8; 
+                                document.getElementById('instruccion-camara').innerText = "¡Quédate quieto!";
+                            } else {
+                                quietoProgress = 0; 
+                                document.getElementById('instruccion-camara').innerText = "Te estás moviendo...";
+                            }
+                        }
+                        lastCenter = center;
+
+                        document.getElementById('progress-bar').style.width = Math.min(quietoProgress, 100) + '%';
+
+                        if (quietoProgress >= 100) {
+                            isDetecting = false;
+                            clearInterval(detectionInterval);
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            document.getElementById('instruccion-camara').innerText = "¡Foto procesando!";
+                            capturarFotoFinal();
+                        }
+
+                    } else if (resizedDetections.length > 1) {
+                        quietoProgress = 0;
+                        document.getElementById('progress-bar').style.width = '0%';
+                        document.getElementById('instruccion-camara').innerText = "Hay más de un rostro";
+                    } else {
+                        quietoProgress = 0;
+                        document.getElementById('progress-bar').style.width = '0%';
+                        document.getElementById('instruccion-camara').innerText = "Acércate a la cámara";
+                        lastCenter = null;
+                    }
+                } catch (err) {
+                    console.error("Error en el escaneo:", err);
+                }
+            }, 150); 
+        }
+
+        async function capturarFotoFinal() {
+            const video = document.getElementById('video-feed');
+            const canvas = document.getElementById('canvas-foto');
+            const context = canvas.getContext('2d');
+            const estadoFicha = document.getElementById('estadoFicha');
+
+            estadoFicha.className = "flex items-center gap-2 text-tecblue text-sm bg-blue-50 p-2 rounded-lg border border-blue-100 transition-all duration-300";
+            estadoFicha.innerHTML = `<i class="ph ph-spinner animate-spin text-lg text-tecblue"></i><span>Estado: <span class="font-bold">Buscando en la base de datos...</span></span>`;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.translate(canvas.width, 0);
+            context.scale(-1, 1);
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imagenBase64 = canvas.toDataURL('image/jpeg', 0.9);
+
+            try {
+                const response = await fetch('/procesar_rostro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imagen: imagenBase64 })
+                });
+
+                if (!response.ok) throw new Error("Error de red");
+                const data = await response.json();
+
+                document.getElementById('progress-container').classList.add('hidden');
+                document.getElementById('instruccion-camara').classList.add('hidden');
+
+                if (data.exito && data.reconocido) {
+                    
+                    // --- 1. LLENAR LOS CAMPOS DE LA FICHA EN PANTALLA INMEDIATAMENTE ---
+                    document.getElementById('ficha-control').value = data.alumno.no_control;
+                    document.getElementById('ficha-nombre').value = data.alumno.nombre;
+                    document.getElementById('ficha-carrera').value = data.alumno.carrera;
+
+                    estadoFicha.className = "flex items-center gap-2 text-green-600 text-sm bg-green-50 p-2 rounded-lg border border-green-100";
+                    estadoFicha.innerHTML = `<i class="ph ph-check-circle text-lg"></i><span><b>¡Verificación Exitosa!</b></span>`;
+
+                    // --- LA MODIFICACIÓN: ESPERAR 2.5 SEGUNDOS VIENDO LA FICHA ANTES DE ABRIR EL MODAL ---
+                    setTimeout(() => {
+                        
+                        // --- 2. MOSTRAR EL MODAL Y LA ANIMACIÓN ---
+                        const modal = document.getElementById('modal-bienvenida');
+                        const modalContent = document.getElementById('modal-content');
+                        const modalNombre = document.getElementById('modal-nombre');
+                        const modalProgress = document.getElementById('modal-progress');
+
+                        const primerNombre = data.alumno.nombre.split(' ')[0];
+                        modalNombre.innerText = `¡HOLA, ${primerNombre}!`;
+
+                        modal.classList.remove('hidden');
+                        
+                        setTimeout(() => {
+                            modal.classList.remove('opacity-0');
+                            modalContent.classList.remove('scale-95');
+                            modalContent.classList.add('scale-100');
+                            
+                            modalProgress.style.transition = 'none';
+                            modalProgress.style.width = '100%';
+                            void modalProgress.offsetWidth; 
+                            modalProgress.style.transition = 'width 5s linear';
+                            modalProgress.style.width = '0%';
+                        }, 50);
+
+                        // --- 3. REINICIAR TODO DESPUÉS DE QUE TERMINEN LOS 5 SEGUNDOS DEL MODAL ---
+                        setTimeout(() => {
+                            modal.classList.add('opacity-0');
+                            modalContent.classList.remove('scale-100');
+                            modalContent.classList.add('scale-95');
+                            
+                            setTimeout(() => {
+                                modal.classList.add('hidden');
+                                
+                                // Borrar datos de la ficha al terminar todo el ciclo
+                                document.getElementById('ficha-control').value = '';
+                                document.getElementById('ficha-nombre').value = '';
+                                document.getElementById('ficha-carrera').value = '';
+                                
+                                estadoFicha.className = "flex items-center gap-2 text-gray-500 text-sm p-2 rounded-lg";
+                                estadoFicha.innerHTML = `<i class="ph ph-info text-lg"></i><span>Estado: <span class="font-semibold text-gray-600">Esperando siguiente estudiante...</span></span>`;
+                                
+                                iniciarEscaneo(); 
+                            }, 300); 
+                        }, 5000);
+
+                    }, 2500); // <-- 2500 milisegundos de espera leyendo la ficha en pantalla
+
+                } else if (data.exito === false && data.reconocido === false) {
+                    estadoFicha.className = "flex flex-col sm:flex-row items-center justify-between gap-3 text-red-600 text-xs bg-red-50 p-3 rounded-lg border border-red-100 transition-all duration-300 transform shake w-full";
+                    estadoFicha.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-warning-octagon text-xl"></i>
+                            <span><b>No registrado:</b> El sistema no reconoce tu biometría.</span>
+                        </div>
+                        <a href="/admin/registrar_alumno" class="bg-tecblue hover:bg-[#152b52] text-white font-bold px-3 py-1.5 rounded text-center transition-colors shadow-sm whitespace-nowrap">
+                            Registrarse Aquí
+                        </a>
+                    `;
+                } else {
+                    estadoFicha.className = "flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 p-2 rounded-lg border border-yellow-100 transition-all duration-300 transform shake";
+                    estadoFicha.innerHTML = `<i class="ph ph-warning text-lg"></i><span><b>Aviso:</b> ${data.mensaje}</span>`;
+                    setTimeout(() => { iniciarEscaneo(); }, 3000);
+                }
+
+            } catch (error) {
+                console.error("Error al enviar:", error);
+                estadoFicha.className = "flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-lg border border-red-100";
+                estadoFicha.innerHTML = `<i class="ph ph-wifi-slash text-lg"></i><span><b>Error:</b> Conexión perdida. Reintentando...</span>`;
+                setTimeout(() => { iniciarEscaneo(); }, 3000);
+            }
+        }
     </script>
 </body>
 </html>

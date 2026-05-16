@@ -2,3 +2,9 @@ venv/
 __pycache__/
 *.pyc
 .env
+
+**/__pycache__/
+*.pyc
+static/fotos_alumnos/*.jpg
+static/fotos_alumnos/*.png
+debug_rostro.jpg

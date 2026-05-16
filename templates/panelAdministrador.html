@@ -68,9 +68,12 @@
                 <i class="ph ph-chart-line-up text-xl group-hover:text-tecaccent transition-colors"></i>
                 Reportes de Acceso
             </a>
-        </nav>
 
-     
+         <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors group">
+                <i class="ph ph-gear-six text-xl group-hover:text-tecaccent transition-colors"></i>
+                Configuración del Sistema
+            </a>
+        </nav>
     </aside>
 
     <main class="flex-1 flex flex-col relative h-full overflow-hidden">
@@ -90,34 +93,44 @@
         <div class="flex-1 overflow-y-auto p-8">
             <div class="max-w-7xl mx-auto space-y-8">
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     
-                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                        <div class="bg-blue-50 text-tecblue p-4 rounded-xl">
-                            <i class="ph ph-users-three text-3xl"></i>
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+                        <div class="bg-gray-50 text-gray-500 p-4 rounded-xl">
+                            <i class="ph ph-users text-3xl"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Alumnos Registrados</p>
-                            <h3 class="text-2xl font-black text-gray-800 mt-1">0</h3>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Alumnos Totales</p>
+                            <h3 class="text-2xl font-black text-gray-800 mt-1">{{ total_alumnos }}</h3>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+                        <div class="bg-blue-50 text-tecblue p-4 rounded-xl">
+                            <i class="ph ph-scan text-3xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Con Biometría</p>
+                            <h3 class="text-2xl font-black text-tecblue mt-1">{{ alumnos_con_rostro }}</h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
                         <div class="bg-green-50 text-green-600 p-4 rounded-xl">
                             <i class="ph ph-door-open text-3xl"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Accesos Hoy</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Accesos Hoy</p>
                             <h3 class="text-2xl font-black text-gray-800 mt-1">0</h3>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
                         <div class="bg-amber-50 text-amber-600 p-4 rounded-xl">
                             <i class="ph ph-warning-circle text-3xl"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Avisos Activos</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Avisos Activos</p>
                             <h3 class="text-2xl font-black text-gray-800 mt-1">0</h3>
                         </div>
                     </div>
