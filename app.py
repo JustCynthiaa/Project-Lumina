@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import json
 import io
 from flask import Flask, render_template, request, url_for, session, redirect, flash, jsonify
@@ -45,6 +46,14 @@ class Usuario(db.Model):
     id       = db.Column(db.Integer, primary_key=True)
     usuario  = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
+
+class Entradas(db.Model):
+    __tablename__ = 'entradas'
+    id           = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    no_control   = db.Column(db.String(20), db.ForeignKey('alumnos.no_control'), nullable=False)
+    fecha_hora   = db.Column(db.DateTime, nullable=False)
+    metodo       = db.Column(db.String(20), nullable=False)  # 'facial' o 'manual', o si ponemos huella
+    
 
 # --- PREVENIR CACHÉ ---
 @app.after_request
@@ -143,6 +152,15 @@ def procesar_rostro():
             # Buscamos cuál de todos fue el que coincidió primero
             indice_match = coincidencias.index(True)
             alumno_reconocido = alumnos_registrados[indice_match]
+
+            # Registrar la entrada en la base de datos
+            entrada = Entradas(
+                no_control=alumno_reconocido.no_control,
+                fecha_hora=datetime.now(),
+                metodo='Facial'
+            )
+            db.session.add(entrada)
+            db.session.commit()
 
             # Formateamos los datos para la Ficha del Estudiante en el Frontend
             nombre_completo = f"{alumno_reconocido.nombre} {alumno_reconocido.apellido_paterno} {alumno_reconocido.apellido_materno}"

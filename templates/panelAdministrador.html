@@ -139,7 +139,7 @@
                         </div>
                         <div>
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Accesos Hoy</p>
-                            <h3 class="text-2xl font-black text-gray-800 mt-1">0</h3>
+                            <h3 class="text-2xl font-black text-gray-800 mt-1">{{ entradas_hoy }}</h3>
                         </div>
                     </div>
 
@@ -176,27 +176,19 @@
                                 </tr>
                             </thead>
                             <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
+                                {%for entrada, alumno in lista_entradas %}
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="py-4 px-6 font-medium">BRAWSITO</td>
-                                    <td class="py-4 px-6 text-gray-500">22540123</td>
-                                    <td class="py-4 px-6 text-gray-500">Sistemas Computacionales</td>
-                                    <td class="py-4 px-6"><span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold">08:15 AM</span></td>
-                                    <td class="py-4 px-6 text-gray-500 flex items-center gap-1"><i class="ph ph-scan text-tecblue"></i> Facial</td>
+                                    <td class="py-4 px-6 font-medium">{{alumno.nombre}} {{alumno.apellido_paterno}}</td>
+                                    <td class="py-4 px-6 text-gray-500">{{alumno.no_control}}</td>
+                                    <td class="py-4 px-6 text-gray-500">{{alumno.carrera}}</td>
+                                    <td class="py-4 px-6"><span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold">{{entrada.fecha_hora.strftime('%I:%M %p')}}</span></td>
+                                    <td class="py-4 px-6 text-gray-500 flex items-center gap-1"><i class="ph ph-scan text-tecblue"></i> {{entrada.metodo}}</td>
                                 </tr>
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="py-4 px-6 font-medium">Nombre Prueba JAJJSD BRAWL</td>
-                                    <td class="py-4 px-6 text-gray-500">21540987</td>
-                                    <td class="py-4 px-6 text-gray-500">Ingeniería Industrial</td>
-                                    <td class="py-4 px-6"><span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold">08:02 AM</span></td>
-                                    <td class="py-4 px-6 text-gray-500 flex items-center gap-1"><i class="ph ph-scan text-tecblue"></i> Facial</td>
+                                {%else%}
+                               <tr>
+                                    <td colspan="4" class="text-center">No hay accesos registrados hoy.</td>
                                 </tr>
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="py-4 px-6 font-medium">INVENCIBLE VS UN MORTAL</td>
-                                    <td class="py-4 px-6 text-gray-500">22670049</td>
-                                    <td class="py-4 px-6 text-gray-500">Sistemas Computacionales</td>
-                                    <td class="py-4 px-6"><span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold">07:55 AM</span></td>
-                                    <td class="py-4 px-6 text-gray-500 flex items-center gap-1"><i class="ph ph-scan text-tecblue"></i> Facial</td>
-                                </tr>
+                                {%endfor%}
                             </tbody>
                         </table>
                     </div>
