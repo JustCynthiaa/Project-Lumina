@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Alumnos | LUMINA</title>
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="icon" type="image/png" href="/static/images/logoTec.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tecblue: '#1B396A',
+                        tecaccent: '#60A5FA',
+                        bodybg: '#F3F4F6',
+                        panelbg: '#FFFFFF',
+                        sidebarbg: '#112341'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-bodybg text-gray-800 h-screen flex overflow-hidden font-sans">
+
+    <aside class="w-72 bg-sidebarbg text-white flex flex-col shadow-2xl relative z-20">
+        <div class="p-6 border-b border-white/10 flex items-center gap-4">
+            <div class="bg-white p-1.5 rounded-lg flex items-center justify-center h-12 w-12 shadow-sm">
+                <img src="/static/images/logoTec.png" alt="TecNM" class="max-h-full max-w-full object-contain">
+            </div>
+            <div>
+                <h2 class="text-lg font-black tracking-widest leading-none">LUMINA</h2>
+                <p class="text-[10px] text-tecaccent uppercase tracking-widest mt-1 font-bold">Panel Admin</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+            <p class="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Principal</p>
+            
+            <a href="/admin/panel" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors group">
+                <i class="ph ph-user-gear text-xl group-hover:text-tecaccent transition-colors"></i>
+                Dashboard
+            </a>
+            
+            <a href="/admin/alumnos" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-tecblue/50 text-white border border-tecaccent/30 font-medium transition-colors">
+                <i class="ph ph-squares-four text-xl text-tecaccent"></i>
+                Gestión de Alumnos
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors group">
+                <i class="ph ph-users text-xl group-hover:text-tecaccent transition-colors"></i>
+                Gestión de Usuarios
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors group">
+                <i class="ph ph-push-pin text-xl group-hover:text-tecaccent transition-colors"></i>
+                Avisos Oficiales
+            </a>
+            
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors group">
+                <i class="ph ph-chart-line-up text-xl group-hover:text-tecaccent transition-colors"></i>
+                Reportes de Acceso
+            </a>
+
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors group">
+                <i class="ph ph-gear-six text-xl group-hover:text-tecaccent transition-colors"></i>
+                Configuración del Sistema
+            </a>
+        </nav>
+    </aside>
+        
+    <main class="flex-1 flex flex-col relative h-full overflow-hidden">
+        
+        <div class="w-full bg-white px-8 py-3 flex items-center justify-between border-b border-gray-200 select-none">
+            <div class="flex items-center space-x-4">
+                <img src="/static/images/gob.png" alt="Gobierno de México" class="h-12 w-auto object-contain">
+        
+            <div class="h-10 w-[1px] bg-[#bc955c]/40"></div>
+        
+                <img src="/static/images/educacion.png" alt="Secretaría de Educación Pública" class="h-12 w-auto object-contain">
+        
+            <div class="h-10 w-[1px] bg-[#bc955c]/40"></div>
+        
+                <img src="/static/images/logo_tecnm.png" alt="Tecnológico Nacional de México" class="h-12 w-auto object-contain">
+        </div>
+
+        <div>
+                <img src="/static/images/logo_itiguala.png" alt="Instituto Tecnológico de Iguala" class="h-14 w-auto object-contain">
+        </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-8">
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-2xl font-bold text-tecblue">Gestión de Estudiantes</h1>
+                    <p class="text-sm text-gray-500 mt-1">Administra el padrón de alumnos de la institución</p>
+                </div>
+                <div class="flex items-center gap-3 mt-4 md:mt-0">
+                    <button class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition shadow-sm font-medium text-sm">
+                        <i class="ph ph-download text-lg"></i> Importar Alumnos
+                    </button>
+                    <a href="{{ url_for('vista_registrar_alumno') }}" class="flex items-center gap-2 px-4 py-2 bg-tecblue text-white rounded-lg hover:bg-tecblue/90 transition shadow-sm font-medium text-sm">
+                        <i class="ph ph-user-plus text-lg text-tecaccent"></i> Nuevo Alumno
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="flex items-center gap-2 text-gray-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-md transition-all text-sm font-medium">
+                        <i class="ph ph-sign-out text-lg"></i>
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2 relative group">
+                        <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg group-focus-within:text-tecblue transition-colors"></i>
+                        <input type="text" id="inputBusqueda" placeholder="Buscar por Nombre o Número de Control..." 
+                               class="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-tecblue/20 focus:border-tecblue outline-none transition-all text-sm">
+                    </div>
+                    <div>
+                        <select id="filtroCarrera" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 focus:bg-white focus:ring-2 focus:ring-tecblue/20 focus:border-tecblue outline-none transition-all cursor-pointer">
+                            <option value="">Todas las carreras</option>
+                            <option>Ingeniería En Sistemas Computacionales</option>
+                            <option>Ingeniería Industrial</option>
+                            <option>Ingeniería Informática</option>
+                            <option>Ingeniería En Gestión Empresarial</option>
+                            <option>Contador Publico</option>
+                            
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50/80 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">No. Control</th>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre Completo</th>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Carrera</th>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Semestre</th>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Biometría</th>
+                                <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCuerpo" class="divide-y divide-gray-100">
+                            {% for alumno in alumnos.items %}
+                            <tr class="hover:bg-gray-50/50 transition-colors group">
+                                <td class="px-6 py-4 text-sm font-bold text-tecblue whitespace-nowrap">{{ alumno.no_control }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-700 font-medium whitespace-nowrap">{{ alumno.nombre }} {{ alumno.apellido_paterno }} {{ alumno.apellido_materno }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ alumno.carrera }}</td>
+                                <td class="px-6 py-4 text-sm text-center font-medium text-gray-700">{{ alumno.semestre }}°</td>
+                                <td class="px-6 py-4 text-center">
+                                    {% if alumno.face_encoding %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <i class="ph ph-check-circle text-sm"></i> Registrado
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                            <i class="ph ph-warning-circle text-sm"></i> Pendiente
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button class="p-1.5 text-gray-400 hover:text-tecblue hover:bg-tecblue/10 rounded-md transition-colors" title="Editar">
+                                            <i class="ph ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Eliminar">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-gray-50/50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                    <p class="text-sm text-gray-500 font-medium">Mostrando pág. {{ alumnos.page }} de {{ alumnos.pages }}</p>
+                    <div class="flex items-center gap-1">
+                        <a href="{{ url_for('lista_alumnos', page=alumnos.prev_num) if alumnos.has_prev else '#' }}" 
+                           class="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors {{ 'opacity-40 pointer-events-none' if not alumnos.has_prev }}">
+                            Anterior
+                        </a>
+                        <a href="{{ url_for('lista_alumnos', page=alumnos.next_num) if alumnos.has_next else '#' }}" 
+                           class="px-3 py-1.5 text-sm font-medium rounded-md bg-tecblue text-white hover:bg-tecblue/90 transition-colors {{ 'opacity-40 pointer-events-none' if not alumnos.has_next }}">
+                            Siguiente
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <script>
+        const inputBusqueda = document.getElementById('inputBusqueda');
+        const tablaCuerpo = document.getElementById('tablaCuerpo');
+
+        inputBusqueda.addEventListener('input', function() {
+            const query = this.value;
+            if (query.length < 2) return;
+
+            fetch(`/api/buscar_alumnos?query=${query}`)
+                .then(res => res.json())
+                .then(data => {
+                    tablaCuerpo.innerHTML = '';
+                    data.forEach(al => {
+                        
+                        // LÓGICA PARA ELEGIR EL DISEÑO DEL BADGE BIOMÉTRICO
+                        let badgeBiometria = al.tiene_biometria 
+                            ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                 <i class="ph ph-check-circle text-sm"></i> Registrado
+                               </span>`
+                            : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                 <i class="ph ph-warning-circle text-sm"></i> Pendiente
+                               </span>`;
+
+                        tablaCuerpo.innerHTML += `
+                            <tr class="hover:bg-gray-50/50 transition-colors group">
+                                <td class="px-6 py-4 text-sm font-bold text-tecblue whitespace-nowrap">${al.no_control}</td>
+                                <td class="px-6 py-4 text-sm text-gray-700 font-medium whitespace-nowrap">${al.nombre} ${al.apellido_paterno} ${al.apellido_materno}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">${al.carrera}</td>
+                                <td class="px-6 py-4 text-sm text-center font-medium text-gray-700">${al.semestre}°</td>
+                                <td class="px-6 py-4 text-center">
+                                    ${badgeBiometria}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button class="p-1.5 text-gray-400 hover:text-tecblue hover:bg-tecblue/10 rounded-md transition-colors" title="Editar">
+                                            <i class="ph ph-pencil-simple text-lg"></i>
+                                        </button>
+                                        <button class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Eliminar">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,4 +1,5 @@
 import os
+from models import db, Alumno, Entradas, Usuario
 from datetime import datetime
 import json
 import io
@@ -24,36 +25,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+#modelos cambiados de lugar -> models.py
+db.init_app(app)
 
-# --- MODELOS ---
-class Alumno(db.Model):
-    __tablename__ = 'alumnos'
-    no_control       = db.Column(db.String(20), primary_key=True)
-    nombre           = db.Column(db.String(50), nullable=False)
-    apellido_paterno = db.Column(db.String(50), nullable=False, default='Por Definir')
-    apellido_materno = db.Column(db.String(50), nullable=False, default='Por Definir')
-    carrera          = db.Column(db.String(100), nullable=False, default='Por Definir')
-    semestre         = db.Column(db.String(20), nullable=False, default='Por Definir') 
-    email            = db.Column(db.String(100), nullable=False, default='Por Definir')
-    
-    # CAMPOS BIOMÉTRICOS
-    face_encoding    = db.Column(db.Text, nullable=True) 
-    foto_path        = db.Column(db.String(255), nullable=True)
-
-class Usuario(db.Model):
-    __tablename__ = 'usuarios'
-    id       = db.Column(db.Integer, primary_key=True)
-    usuario  = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
-
-class Entradas(db.Model):
-    __tablename__ = 'entradas'
-    id           = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    no_control   = db.Column(db.String(20), db.ForeignKey('alumnos.no_control'), nullable=False)
-    fecha_hora   = db.Column(db.DateTime, nullable=False)
-    metodo       = db.Column(db.String(20), nullable=False)  # 'facial' o 'manual', o si ponemos huella
-    
 
 # --- PREVENIR CACHÉ ---
 @app.after_request
@@ -295,10 +269,58 @@ def buscar_alumnos():
             'apellido_materno': al.apellido_materno,
             'carrera': al.carrera,
             'semestre': al.semestre,
-            'email': al.email
+            'email': al.email,
+            'tiene_biometria': True if al.face_encoding else False
         })
         
     return jsonify(alumnos_lista)
+
+@app.route('/admin/alumnos')
+def lista_alumnos():
+    from app import Alumno, db 
+    
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('login'))
+
+    page = request.args.get('page', 1, type=int)
+    
+    try:
+
+        alumnos_paginados = Alumno.query.paginate(page=page, per_page=20, error_out=False)
+        return render_template('gestion_alumnos.html', alumnos=alumnos_paginados)
+    except Exception as e:
+        return f"Error al cargar alumnos: {str(e)}"
+    
+
+# para en un futuro agregar opcion de importar alumnos desde csv
+import csv
+
+@app.route('/admin/importar_alumnos', methods=['POST'])
+def importar_alumnos():
+    from app import Alumno, db 
+    file = request.files['archivo_csv']
+    
+    if file:
+        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        reader = csv.DictReader(stream)
+        
+        for row in reader:
+            existente = Alumno.query.get(row['no_control'])
+            if not existente:
+                nuevo = Alumno(
+                    no_control=row['no_control'],
+                    nombre=row['nombre'],
+                    apellido_paterno=row['apellido_paterno'],
+                    apellido_materno=row['apellido_materno'],
+                    carrera=row['carrera'],
+                    semestre=row['semestre'],
+                    email=row['email']
+                )
+                db.session.add(nuevo)
+        
+        db.session.commit()
+        flash('Alumnos importados correctamente', 'success')
+    return redirect(url_for('admin_bp.lista_alumnos'))
 
 from appadmin import admin_bp
 app.register_blueprint(admin_bp)

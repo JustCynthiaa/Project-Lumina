@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, render_template, session, redirect, url_for
-import __main__  
+from models import db, Alumno, Entradas     #ahora importamos desde models
 
 admin_bp = Blueprint('admin_bp', __name__)
 
@@ -12,14 +12,9 @@ def panel_administrador():
         
     try:
         
-        Alumno = __main__.Alumno
-        Entradas = __main__.Entradas
-        db = __main__.db
-
-        
         total_alumnos = Alumno.query.count()
         alumnos_con_rostro = Alumno.query.filter(Alumno.face_encoding.isnot(None)).count()
-        entradas_hoy = Entradas.query.filter(Entradas.fecha_hora >= datetime.now().date()).count()
+        entradas_hoy = Entradas.query.filter(Entradas.fecha_hora >= datetime.now().date()).count()  #es redundante pero shh
         lista_entradas = db.session.query(Entradas, Alumno).join(Alumno, Entradas.no_control == Alumno.no_control).filter(Entradas.fecha_hora >= datetime.now().date()).order_by(Entradas.fecha_hora.desc()).all()
         
     except Exception as e:
