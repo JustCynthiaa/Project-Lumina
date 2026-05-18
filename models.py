@@ -1,4 +1,4 @@
-# tenia errores de dedundancia y mejor que la declaracion de la BD sea en un archivo aparte
+# tenia errores de redundancia y mejor que la declaracion de la BD sea en un archivo aparte
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()

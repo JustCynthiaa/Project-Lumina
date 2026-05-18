@@ -188,15 +188,25 @@ def guardar_alumno():
     email = data.get('email')
     imagen_b64 = data.get('imagen', '')
 
+    es_nuevo = data.get('es_nuevo', False)
+
     if not no_control or not imagen_b64:
         return jsonify({'exito': False, 'mensaje': 'Faltan datos para el registro.'})
 
     # BUSCAMOS AL ALUMNO EXISTENTE
     alumno = Alumno.query.filter_by(no_control=no_control).first()
     
-    if not alumno:
-        return jsonify({'exito': False, 'mensaje': 'El alumno no existe en la base de datos.'})
-
+    if es_nuevo:
+        if alumno:
+            # Si intentamos crear uno nuevo pero YA EXISTE, bloqueamos
+            return jsonify({'exito': False, 'mensaje': f'El número de control {no_control} ya está registrado.'})
+        # Como no existe, lo creamos y lo preparamos para guardar
+        alumno = Alumno(no_control=no_control)
+        db.session.add(alumno)
+    else:
+        if not alumno:
+            # Si es solo actualización biométrica pero NO EXISTE, bloqueamos
+            return jsonify({'exito': False, 'mensaje': 'El alumno no existe en la base de datos.'})
     try:
         if "," in imagen_b64:
             _, encoded = imagen_b64.split(",", 1)
@@ -247,18 +257,33 @@ def guardar_alumno():
 def buscar_alumnos():
     """Busca estudiantes en tiempo real por número de control o nombre."""
     query_str = request.args.get('query', '').strip()
+    carrera_str = request.args.get('carrera', '').strip()
+
+    limite = request.args.get('limit', 8, type=int) #limite default
     
-    if not query_str or len(query_str) < 2:
+    if (not query_str or len(query_str) < 2) and not carrera_str:
         return jsonify([])
     
-    search = f"%{query_str}%"
-    resultados = Alumno.query.filter(
-        or_(
-            Alumno.no_control.ilike(search),
-            Alumno.nombre.ilike(search),
-            Alumno.apellido_paterno.ilike(search)
+    consulta = Alumno.query
+    
+    if query_str and len(query_str) >= 2:
+        search = f"%{query_str}%"
+        consulta = consulta.filter(
+            or_(
+                Alumno.no_control.ilike(search),
+                Alumno.nombre.ilike(search),
+                Alumno.apellido_paterno.ilike(search)
+            )
         )
-    ).limit(8).all()
+        
+
+    if carrera_str:
+        consulta = consulta.filter(Alumno.carrera == carrera_str)
+
+    if limite > 0:
+        resultados = consulta.limit(limite).all() #limite conultas
+    else:
+        resultados = consulta.limit(30).all() # limite seguridad
     
     alumnos_lista = []
     for al in resultados:

@@ -30,6 +30,27 @@
 </head>
 <body class="bg-bodybg text-gray-800 h-screen flex overflow-hidden font-sans">
 
+    <!-- Modal de Confirmación para Avanzar Semestre -->
+    <div id="modalAvanzarSemestre" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300 flex flex-col">
+            <div class="flex items-center gap-3 text-tecblue mb-4">
+                <i class="ph ph-warning-circle text-4xl text-orange-500"></i>
+                <h3 class="text-xl font-bold text-gray-800">¿Avanzar de Semestre?</h3>
+            </div>
+            <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                Estás a punto de aumentar en <b class="text-tecblue">1</b> el semestre de <b>todos</b> los alumnos registrados. Esta acción modificará la base de datos de forma masiva (hasta un límite de 12 semestres). <br><br>¿Estás completamente seguro de que deseas continuar?
+            </p>
+            <div class="flex justify-end gap-3 mt-auto">
+                <button onclick="cerrarModalSemestre()" class="px-5 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition-colors text-sm">
+                    Cancelar
+                </button>
+                <button id="btnConfirmarSemestre" onclick="ejecutarAvanzarSemestre()" class="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-colors shadow-md flex items-center gap-2 text-sm">
+                    <i class="ph ph-fast-forward-circle text-lg"></i> Confirmar Avance
+                </button>
+            </div>
+        </div>
+    </div>
+
     <aside class="w-72 bg-sidebarbg text-white flex flex-col shadow-2xl relative z-20">
         <div class="p-6 border-b border-white/10 flex items-center gap-4">
             <div class="bg-white p-1.5 rounded-lg flex items-center justify-center h-12 w-12 shadow-sm">
@@ -104,12 +125,29 @@
                     <p class="text-sm text-gray-500 mt-1">Administra el padrón de alumnos de la institución</p>
                 </div>
                 <div class="flex items-center gap-3 mt-4 md:mt-0">
-                    <button class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition shadow-sm font-medium text-sm">
-                        <i class="ph ph-download text-lg"></i> Importar Alumnos
-                    </button>
-                    <a href="{{ url_for('vista_registrar_alumno') }}" class="flex items-center gap-2 px-4 py-2 bg-tecblue text-white rounded-lg hover:bg-tecblue/90 transition shadow-sm font-medium text-sm">
-                        <i class="ph ph-user-plus text-lg text-tecaccent"></i> Nuevo Alumno
-                    </a>
+                    <div class="relative text-left" id="menuOpcionesContainer">
+                        <button onclick="toggleMenuOpciones()" class="flex items-center gap-2 px-4 py-2 bg-tecblue text-white rounded-lg hover:bg-tecblue/90 transition shadow-sm font-medium text-sm">
+                            <i class="ph ph-list-dashes text-lg text-tecaccent"></i> Opciones Alumnos
+                            <i class="ph ph-caret-down text-sm ml-1"></i>
+                        </button>
+                        
+                        <div id="menuOpciones" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+                            <div class="py-1">
+                                <a href="{{ url_for('vista_registrar_alumno') }}?modo=nuevo" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-tecblue transition-colors">
+                                    <i class="ph ph-user-plus text-lg text-gray-400"></i> Nuevo Alumno
+                                </a>
+                                
+                                <button class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-tecblue transition-colors text-left">
+                                    <i class="ph ph-file-csv text-lg text-gray-400"></i> Importar desde CSV
+                                </button>
+                                
+                                <div class="h-px bg-gray-100 my-1"></div> 
+                                <button onclick="abrirModalSemestre()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors text-left">
+                                    <i class="ph ph-graduation-cap text-lg text-gray-400"></i> Aumentar Semestre
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <a href="{{ url_for('logout') }}" class="flex items-center gap-2 text-gray-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-md transition-all text-sm font-medium">
                         <i class="ph ph-sign-out text-lg"></i>
                         Cerrar Sesión
@@ -184,8 +222,8 @@
                         </tbody>
                     </table>
                 </div>
-
-                <div class="bg-gray-50/50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                {% if alumnos.pages > 1 %}
+                <div id="paginacionContainer" class="bg-gray-50/50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                     <p class="text-sm text-gray-500 font-medium">Mostrando pág. {{ alumnos.page }} de {{ alumnos.pages }}</p>
                     <div class="flex items-center gap-1">
                         <a href="{{ url_for('lista_alumnos', page=alumnos.prev_num) if alumnos.has_prev else '#' }}" 
@@ -198,6 +236,7 @@
                         </a>
                     </div>
                 </div>
+                {% endif %}
             </div>
             
         </div>
@@ -205,19 +244,47 @@
 
     <script>
         const inputBusqueda = document.getElementById('inputBusqueda');
+        const filtroCarrera = document.getElementById('filtroCarrera');
         const tablaCuerpo = document.getElementById('tablaCuerpo');
+        const paginacionContainer = document.getElementById('paginacionContainer');
+        
+        const htmlOriginalTabla = tablaCuerpo.innerHTML;
 
-        inputBusqueda.addEventListener('input', function() {
-            const query = this.value;
-            if (query.length < 2) return;
+        function realizarBusqueda() {
+            const query = inputBusqueda.value.trim();
+            const carrera = filtroCarrera.value;
 
-            fetch(`/api/buscar_alumnos?query=${query}`)
+            // Si no hay búsqueda ni filtro, regresamos a la tabla original (paginada)
+            if (query.length === 0 && carrera === '') {
+                tablaCuerpo.innerHTML = htmlOriginalTabla;
+                if (paginacionContainer) paginacionContainer.style.display = 'flex';
+                return;
+            }
+
+            if (query.length > 0 && query.length < 2 && carrera === '') {
+                return;
+            }
+
+            fetch(`/api/buscar_alumnos?query=${encodeURIComponent(query)}&carrera=${encodeURIComponent(carrera)}&limit=20`)
                 .then(res => res.json())
                 .then(data => {
+                    if (paginacionContainer) paginacionContainer.style.display = 'none';
+                    
                     tablaCuerpo.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tablaCuerpo.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                    <i class="ph ph-magnifying-glass text-3xl mb-2 text-gray-300"></i>
+                                    <p>No se encontraron alumnos con los filtros seleccionados</p>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
                     data.forEach(al => {
-                        
-                        // LÓGICA PARA ELEGIR EL DISEÑO DEL BADGE BIOMÉTRICO
                         let badgeBiometria = al.tiene_biometria 
                             ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                  <i class="ph ph-check-circle text-sm"></i> Registrado
@@ -232,11 +299,9 @@
                                 <td class="px-6 py-4 text-sm text-gray-700 font-medium whitespace-nowrap">${al.nombre} ${al.apellido_paterno} ${al.apellido_materno}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">${al.carrera}</td>
                                 <td class="px-6 py-4 text-sm text-center font-medium text-gray-700">${al.semestre}°</td>
+                                <td class="px-6 py-4 text-center">${badgeBiometria}</td>
                                 <td class="px-6 py-4 text-center">
-                                    ${badgeBiometria}
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex items-center justify-center gap-2">
+                                    <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button class="p-1.5 text-gray-400 hover:text-tecblue hover:bg-tecblue/10 rounded-md transition-colors" title="Editar">
                                             <i class="ph ph-pencil-simple text-lg"></i>
                                         </button>
@@ -248,8 +313,83 @@
                             </tr>
                         `;
                     });
+                })
+                .catch(err => console.error("Error en búsqueda:", err));
+        }
+
+        // Asignar la función a ambos eventos
+        inputBusqueda.addEventListener('input', realizarBusqueda);
+        filtroCarrera.addEventListener('change', realizarBusqueda);
+
+        function toggleMenuOpciones() {
+            const menu = document.getElementById('menuOpciones');
+            menu.classList.toggle('hidden');
+        }
+
+        // --- LÓGICA PARA EL MODAL DE AVANZAR SEMESTRE ---
+        function abrirModalSemestre() {
+            const modal = document.getElementById('modalAvanzarSemestre');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Cerrar menú de opciones si estaba abierto para no encimar cosas
+            const menu = document.getElementById('menuOpciones');
+            if(menu) menu.classList.add('hidden'); 
+        }
+
+        function cerrarModalSemestre() {
+            const modal = document.getElementById('modalAvanzarSemestre');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function ejecutarAvanzarSemestre() {
+            const btn = document.getElementById('btnConfirmarSemestre');
+            const textoOriginal = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> Procesando...';
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+
+            try {
+                // Hacemos el llamado a tu servidor Flask
+                const response = await fetch('/admin/api/avanzar_semestres', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
                 });
+                
+                const data = await response.json();
+
+                if (data.exito) {
+                    cerrarModalSemestre();
+                    // Alerta nativa simple (puedes reemplazarla luego por una notificación toast)
+                    alert("¡Éxito! " + data.mensaje);
+                    // Recargar la página para visualizar los nuevos semestres en la tabla
+                    window.location.reload();
+                } else {
+                    alert("Error al actualizar la base de datos: " + data.mensaje);
+                    btn.disabled = false;
+                    btn.innerHTML = textoOriginal;
+                    btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            } catch (error) {
+                console.error("Error al avanzar semestres:", error);
+                alert("Ocurrió un error de red o no se pudo contactar con el servidor.");
+                btn.disabled = false;
+                btn.innerHTML = textoOriginal;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const container = document.getElementById('menuOpcionesContainer');
+            const menu = document.getElementById('menuOpciones');
+            
+            if (container && menu && !container.contains(e.target) && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
         });
+        
     </script>
 
 </body>

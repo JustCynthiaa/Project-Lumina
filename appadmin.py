@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, jsonify, render_template, session, redirect, url_for
 from models import db, Alumno, Entradas     #ahora importamos desde models
 
 admin_bp = Blueprint('admin_bp', __name__)
@@ -28,3 +28,29 @@ def panel_administrador():
                            alumnos_con_rostro=alumnos_con_rostro,
                            entradas_hoy=entradas_hoy,
                            lista_entradas=lista_entradas)
+@admin_bp.route('/admin/api/avanzar_semestres', methods=['POST'])
+def avanzar_semestres():
+    """Aumenta en 1 el semestre de todos los alumnos registrados."""
+    if not session.get('admin_logged_in'):
+        return jsonify({'exito': False, 'mensaje': 'No autorizado'}), 401
+
+    try:
+        alumnos = Alumno.query.all()
+        actualizados = 0
+        
+        for al in alumnos:
+           if al.semestre and al.semestre.isdigit():
+                sem_actual = int(al.semestre)
+                # limite de 15 porque si
+                if sem_actual < 15:
+                    al.semestre = str(sem_actual + 1)
+                    actualizados += 1
+        
+        db.session.commit()
+        return jsonify({
+            'exito': True, 
+            'mensaje': f'Se avanzó exitosamente el semestre de {actualizados} alumnos.'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'exito': False, 'mensaje': str(e)})
